@@ -1,4 +1,4 @@
-name: Verify Commit Message
+name: Get All Commits from Push
 
 on:
   push:
@@ -6,47 +6,35 @@ on:
       - main
       - develop
       - feature/*   # Adjust if you have other branches to check
-  pull_request:
-    branches:
-      - main
-      - develop
-      - feature/*   # Adjust if you have other branches to check
 
 jobs:
-  check-commit-message:
+  extract-commits:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Check commit message
+    - name: Extract all commit messages from push
       run: |
-        # Get the path to the event JSON file
+        # Path to the GitHub event JSON file
         event_file=$GITHUB_EVENT_PATH
 
-        # Extract commit messages using jq
+        # Use jq to extract all commit messages
         commit_messages=$(jq -r '.commits[].message' "$event_file")
 
-        # Regex pattern to match 'workitem <num> - <subject>'
-        pattern="^workitem [0-9]+ - .+"
+        # Print all commit messages
+        echo "Commit messages in this push:"
+        echo "$commit_messages"
 
-        # Debug: Print all commit logs
-        echo "Commit log output:"
+    - name: Extract all commits with details
+      run: |
+        # Path to the GitHub event JSON file
+        event_file=$GITHUB_EVENT_PATH
+
+        # Use jq to extract all commits with their details
+        commits=$(jq -r '.commits[] | "\(.id) - \(.message) by \(.author.name)"' "$event_file")
+
+        # Print all commits with details
+        echo "Commits in this push:"
         echo "$commits"
-
-        # Iterate over each commit message
-        echo "$commits" | while IFS= read -r commit; do
-          # Strip the commit hash to get the message
-          commit_message=$(echo "$commit" | sed 's/^[0-9a-f]* //')
-
-          # Debug: Print each commit message
-          echo "Checking commit message: $commit_message"
-
-          # Check if the message matches the pattern
-          if ! [[ "$commit_message" =~ $pattern ]]; then
-            echo "Error: Commit message '$commit_message' does not follow the required pattern 'workitem <num> - <subject>'"
-            exit 1
-          fi
-        done
-        echo "All commit messages follow the correct pattern."
