@@ -9,7 +9,7 @@ on:
       - '**'
 
 jobs:
-  extract-commits:
+  verify-commits:
     runs-on: ubuntu-latest
 
     steps:
