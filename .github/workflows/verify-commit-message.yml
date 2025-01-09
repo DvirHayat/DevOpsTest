@@ -22,8 +22,11 @@ jobs:
 
     - name: Check commit message
       run: |
-        # Get all commit messages in the push
-        commits=$(git log --oneline origin/main..HEAD)
+        # Get the path to the event JSON file
+        event_file=$GITHUB_EVENT_PATH
+
+        # Extract commit messages using jq
+        commit_messages=$(jq -r '.commits[].message' "$event_file")
 
         # Regex pattern to match 'workitem <num> - <subject>'
         pattern="^workitem [0-9]+ - .+"
