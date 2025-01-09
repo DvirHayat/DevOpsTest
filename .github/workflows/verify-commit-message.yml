@@ -23,7 +23,7 @@ jobs:
         # Use jq to extract all commit messages
         commit_messages=$(jq -r '.commits[].message' "$event_file")
 
-        pattern="^workitem [0-9]+ - .+
+        pattern="^workitem [0-9]+ - .+"
 
         echo "$commit_messages" | while IFS= read -r commit_message; do
           # Debug: Print the commit message being checked
