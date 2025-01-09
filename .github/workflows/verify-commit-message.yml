@@ -1,4 +1,4 @@
-name: Get All Commits from Push
+name: Verify commits from push
 
 on:
   push:
