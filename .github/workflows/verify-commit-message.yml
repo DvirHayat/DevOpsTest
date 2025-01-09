@@ -1,0 +1,39 @@
+name: Verify Commit Message
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - feature/*   # Adjust if you have other branches to check
+  pull_request:
+    branches:
+      - main
+      - develop
+      - feature/*   # Adjust if you have other branches to check
+
+jobs:
+  check-commit-message:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Check commit message
+      run: |
+        # Get all commit messages in the push
+        commits=$(git log --oneline origin/main..HEAD)
+
+        # Regex pattern to match 'workitem <num> - <subject>'
+        pattern="^workitem [0-9]+ - .+"
+
+        # Iterate over commit messages and check if they match the pattern
+        for commit in "$commits"; do
+          commit_message=$(echo "$commit" | sed 's/^[0-9a-f]* //')  # Strip commit hash
+          if ! [[ "$commit_message" =~ $pattern ]]; then
+            echo "Error: Commit message '$commit_message' does not follow the required pattern 'workitem <num> - <subject>'"
+            exit 1
+          fi
+        done
+        echo "All commit messages follow the correct pattern."
