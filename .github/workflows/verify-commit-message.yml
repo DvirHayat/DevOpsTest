@@ -23,18 +23,16 @@ jobs:
         # Use jq to extract all commit messages
         commit_messages=$(jq -r '.commits[].message' "$event_file")
 
-        # Print all commit messages
-        echo "Commit messages in this push:"
-        echo "$commit_messages"
+        pattern="^workitem [0-9]+ - .+
 
-    - name: Extract all commits with details
-      run: |
-        # Path to the GitHub event JSON file
-        event_file=$GITHUB_EVENT_PATH
+        echo "$commit_messages" | while IFS= read -r commit_message; do
+          # Debug: Print the commit message being checked
+          echo "Checking commit message: $commit_message"
 
-        # Use jq to extract all commits with their details
-        commits=$(jq -r '.commits[] | "\(.id) - \(.message) by \(.author.name)"' "$event_file")
-
-        # Print all commits with details
-        echo "Commits in this push:"
-        echo "$commits"
+          # Check if the message matches the pattern
+          if ! [[ "$commit_message" =~ $pattern ]]; then
+            echo "Error: Commit message '$commit_message' does not follow the required pattern 'workitem <num> - <subject>'"
+            exit 1
+          fi
+        done
+        echo "All commit messages follow the correct pattern."
